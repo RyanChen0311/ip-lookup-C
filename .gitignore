@@ -1,0 +1,28 @@
+# Build artefacts
+build/
+iplookup
+*.o
+*.d
+
+# Generated data (large files)
+data/*.txt
+
+# Doxygen output
+docs/html/
+docs/latex/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Input datasets (too large for git)
+rrc00/
+rrc01/
+rrc03/
+rrc04/
+rrc05/
+iplookup/

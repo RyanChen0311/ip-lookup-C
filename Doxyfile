@@ -1,0 +1,12 @@
+PROJECT_NAME           = "ip-lookup-C"
+PROJECT_NUMBER         = 1.0.0
+PROJECT_BRIEF          = "Binary Trie IP Lookup Engine — Longest Prefix Match in C"
+OUTPUT_DIRECTORY       = docs
+INPUT                  = src include
+RECURSIVE              = YES
+EXTRACT_ALL            = YES
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HTML_OUTPUT            = html
+HAVE_DOT               = NO
+QUIET                  = YES
