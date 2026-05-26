@@ -1,8 +1,8 @@
-# ip-lookup-C
+# ip-lpm
 
 > A high-performance IPv4 routing engine implemented in C, using a **32-level Binary Trie** to perform **Longest Prefix Match (LPM)** — the same algorithm used inside real-world routers and network ASICs.
 
-![CI](https://github.com/RyanChen0311/ip-lookup-C/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/RyanChen0311/ip-lpm/actions/workflows/ci.yml/badge.svg)
 
 ---
 
@@ -36,7 +36,7 @@ Every bit of the destination address selects a left (0) or right (1) child.  Whe
 ## Project Structure
 
 ```
-ip-lookup-C/
+ip-lpm/
 ├── src/
 │   ├── main.c              # Entry point, CLI argument handling, pipeline driver
 │   ├── trie.c              # Binary trie: insert / search (LPM) / free
