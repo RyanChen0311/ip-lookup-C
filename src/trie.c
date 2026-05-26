@@ -80,25 +80,18 @@ void trie_insert(TrieNode **tree, PrefixInfo val, int level)
 
 int trie_search(TrieNode **tree, const char *addr, int level)
 {
-    static int best_match = 0; /* tracks deepest prefix seen so far */
+    TrieNode *cur       = *tree;
+    int       best_match = 0;
+    int       depth     = level;
 
-    if (!(*tree) || level >= IP_BINARY_LEN) {
-        int result  = best_match;
-        best_match  = 0;          /* reset for next lookup */
-        return result;
+    while (cur && depth < IP_BINARY_LEN) {
+        if (cur->data > 0) {
+            best_match = cur->data;
+        }
+        cur = (addr[depth] == '1') ? cur->right : cur->left;
+        depth++;
     }
-
-    /* Update best match whenever we land on a prefix endpoint */
-    if ((*tree)->data > 0) {
-        best_match = (*tree)->data;
-    }
-
-    /* Descend based on the current destination bit */
-    if (addr[level] == '1') {
-        return trie_search(&(*tree)->right, addr, level + 1);
-    } else {
-        return trie_search(&(*tree)->left,  addr, level + 1);
-    }
+    return best_match;
 }
 
 void trie_free(TrieNode *tree)

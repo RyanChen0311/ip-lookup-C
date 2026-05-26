@@ -54,23 +54,19 @@ int run_iplookup(FILE *routing_table, FILE *trace,
 
     /* ------------------------------------------------------------------
      * Phase 1 — allocate next-hop string table
+     * One contiguous calloc for all row data; pointer array wires it up.
      * ------------------------------------------------------------------ */
     t = clock();
     char **nexthop_table = (char **)malloc(sizeof(char *) * MAX_NEXTHOPS);
-    if (!nexthop_table) {
+    char  *nexthop_data  = (char  *)calloc(MAX_NEXTHOPS, IP_BINARY_LEN + 1);
+    if (!nexthop_table || !nexthop_data) {
         fprintf(stderr, "[lookup] failed to allocate nexthop table\n");
+        free(nexthop_data);
+        free(nexthop_table);
         return -1;
     }
     for (i = 0; i < MAX_NEXTHOPS; i++) {
-        nexthop_table[i] = (char *)malloc(IP_BINARY_LEN + 1);
-        if (!nexthop_table[i]) {
-            fprintf(stderr, "[lookup] nexthop row %d allocation failed\n", i);
-            /* Free already-allocated rows */
-            for (int j = 0; j < i; j++) free(nexthop_table[j]);
-            free(nexthop_table);
-            return -1;
-        }
-        nexthop_table[i][0] = '\0';
+        nexthop_table[i] = nexthop_data + i * (IP_BINARY_LEN + 1);
     }
     print_timing("alloc nexthop table", clock() - t);
 
@@ -106,7 +102,7 @@ int run_iplookup(FILE *routing_table, FILE *trace,
     PrefixInfo *prefixes = (PrefixInfo *)malloc(MAX_PREFIXES * sizeof(PrefixInfo));
     if (!prefixes) {
         fprintf(stderr, "[lookup] failed to allocate prefix array\n");
-        for (i = 0; i < MAX_NEXTHOPS; i++) free(nexthop_table[i]);
+        free(nexthop_data);
         free(nexthop_table);
         return -1;
     }
@@ -171,7 +167,7 @@ int run_iplookup(FILE *routing_table, FILE *trace,
      * Cleanup
      * ------------------------------------------------------------------ */
     trie_free(root);
-    for (i = 0; i < MAX_NEXTHOPS; i++) free(nexthop_table[i]);
+    free(nexthop_data);
     free(nexthop_table);
 
     return 0;
