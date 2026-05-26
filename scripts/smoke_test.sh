@@ -10,7 +10,8 @@
 
 set -euo pipefail
 
-BIN="./iplookup"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BIN="$REPO_ROOT/iplookup"
 TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT
 
