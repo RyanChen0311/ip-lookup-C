@@ -69,5 +69,59 @@ LINE_COUNT=$(wc -l < "$NEXTHOP_FILE")
 [[ "$LINE_COUNT" -eq 2 ]] || fail "Expected 2 output lines, got $LINE_COUNT"
 pass "pipeline produces correct line count"
 
+# ---- 4. LPM correctness test ------------------------------------------------
+#
+# Routing table with three levels of overlapping prefixes:
+#   0.0.0.0/0   (index 0 — default-route fallback, invisible in trie by design)
+#   10.0.0.0/8
+#   10.1.0.0/16
+#   10.1.2.0/24
+#   192.168.0.0/16
+#
+# Five destinations exercise every LPM outcome:
+#   10.1.2.5   → /24 wins (longest)
+#   10.1.3.5   → /16 wins (/24 not matched)
+#   10.2.0.1   → /8  wins (/16 not matched)
+#   192.168.1.1→ /16 wins (separate subnet)
+#   8.8.8.8    → default route (no specific prefix)
+
+cat > "$REGION_DIR/prefix_lpm.txt" <<'EOF'
+Network
+0.0.0.0/0
+10.0.0.0/8
+10.1.0.0/16
+10.1.2.0/24
+192.168.0.0/16
+EOF
+
+cat > "$REGION_DIR/trace_lpm.txt" <<'EOF'
+Destination
+10.1.2.5
+10.1.3.5
+10.2.0.1
+192.168.1.1
+8.8.8.8
+EOF
+
+cat > "$TMPDIR/expected_lpm.txt" <<'EOF'
+10.1.2.0/24
+10.1.0.0/16
+10.0.0.0/8
+192.168.0.0/16
+0.0.0.0/0
+EOF
+
+pushd "$TMPDIR" > /dev/null
+"$BIN" rrc00 lpm > /dev/null 2>&1 || fail "LPM correctness: pipeline returned non-zero"
+popd > /dev/null
+
+LPM_OUT="$TMPDIR/data/nexthop_rrc00_lpm.txt"
+[[ -f "$LPM_OUT" ]] || fail "LPM output file not created"
+
+diff "$TMPDIR/expected_lpm.txt" "$LPM_OUT" > /dev/null 2>&1 \
+    || fail "LPM correctness: output does not match expected
+$(diff "$TMPDIR/expected_lpm.txt" "$LPM_OUT" || true)"
+pass "LPM correctness (longest prefix wins at every level)"
+
 echo ""
 echo "All smoke tests passed."
